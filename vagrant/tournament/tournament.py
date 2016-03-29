@@ -10,6 +10,14 @@ def connect():
     """Connect to the PostgreSQL database.  Returns a database connection."""
     return psycopg2.connect("dbname=tournament")
 
+def deleteScoreCard():
+    """Remove all the score records from the database """
+    db = connect()
+    cursor = db.cursor()
+    command = "DELETE FROM ScoreCard;"
+    cursor.execute(command)
+    db.commit()
+    db.close()
 
 def deleteMatches():
     """Remove all the match records from the database."""
@@ -39,20 +47,11 @@ def deleteTournaments():
     db.close()
 
 
-def deleteScoreCard():
-    """Remove all the score records from the database """
-    db = connect()
-    cursor = db.cursor()
-    command = "DELETE FROM ScoreCard;"
-    cursor.execute(command)
-    db.commit()
-    db.close()
-
-
 def createTournament(name):
     """ 
     Create a new tournament
     @name: Name of the tournament
+    Returns the tournament id.
     """
     db = connect()
     cursor = db.cursor()
@@ -110,7 +109,14 @@ def playerStandings(tournamentId):
     """
     db = connect()
     cursor = db.cursor()
-    command = "SELECT s.player, Players.name, s.score, s.matches, s.bye, (SELECT SUM(s2.score) FROM ScoreCard as s2 WHERE s2.player IN (SELECT loser FROM Matches WHERE winner = s.player AND tournament = %s) OR s2.player IN (SELECT winner FROM Matches WHERE loser = s.player AND tournament = %s)) AS omw FROM ScoreCard as s JOIN Players ON s.player = Players.id WHERE s.tournament = %s ORDER BY s.score DESC, omw DESC, s.matches;"
+    command = """SELECT s.player, Players.name, s.score, s.matches, s.bye, (SELECT SUM(s2.score) 
+	       FROM ScoreCard as s2 
+               WHERE s2.player IN 
+               (SELECT loser FROM Matches WHERE winner = s.player AND tournament = %s) 
+ 	       OR s2.player IN 
+	       (SELECT winner FROM Matches WHERE loser = s.player AND tournament = %s)) AS omw 
+	       FROM ScoreCard as s JOIN Players ON s.player = Players.id 
+	       WHERE s.tournament = %s ORDER BY s.score DESC, omw DESC, s.matches;"""
     cursor.execute(command,(tournamentId,tournamentId,tournamentId))
     standings = []
     for standing in cursor.fetchall():
