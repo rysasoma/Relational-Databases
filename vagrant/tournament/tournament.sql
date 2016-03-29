@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS Players (
 -- Matches Table
 CREATE TABLE IF NOT EXISTS Matches (
 	id SERIAL primary key,
-	tournament INTEGER,
+	tournament INTEGER references Tournaments(id),
 	winner INTEGER references Players(id),
 	loser INTEGER references Players(id),
 	draw BOOLEAN 
@@ -30,10 +30,11 @@ CREATE TABLE IF NOT EXISTS Matches (
 
 
 -- Scores Table
-CREATE TABLE IF NOT EXISTS Scores (
+CREATE TABLE IF NOT EXISTS ScoreCard (
 	tournament INTEGER references Tournaments(id),
 	player INTEGER references Players(id),
 	score INTEGER,
 	matches INTEGER,
-	bye INTEGER	
+	bye INTEGER,
+	PRIMARY KEY(tournament, player)	
 );
