@@ -29,5 +29,5 @@ Load the SQL schema for the first time with:
 
 Run the python tests with the following command:
 
-    python tournament_test.py
+    python extra_tournament_test.py
 
