@@ -3,10 +3,12 @@ A basic schema for a swiss tournament.
 
 #Pre-requisites
 1. Need PostgreSQL
-
 2. Need SQLite 
-
 3. Need python
+
+OR
+
+Use the Udacity environment by following the instructions [here](https://www.udacity.com/wiki/ud197/install-vagrant)
 
 #Usage
 Have a tournament database 
