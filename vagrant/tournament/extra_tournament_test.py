@@ -4,6 +4,7 @@
 
 from tournament import *
 
+
 def testDeleteMatches():
     deleteMatches()
     print "1. Old matches can be deleted."
@@ -88,8 +89,9 @@ def testStandingsBeforeMatches():
         raise ValueError("Only registered players should appear in standings.")
     if len(standings[0]) != 6:
         raise ValueError("Each playerStandings row should have five columns.")
-    [(id1, name1, wins1, matches1, bye1, owm1), (id2, name2, wins2, matches2, bye2, owm2)] = standings
-    if matches1 != 0 or matches2 != 0 or wins1 != 0 or wins2 != 0 or bye1 !=0 or bye2 != 0:
+    [(id1, name1, wins1, matches1, bye1, owm1),
+     (id2, name2, wins2, matches2, bye2, owm2)] = standings
+    if matches1 != 0 or matches2 != 0 or wins1 != 0 or wins2 != 0 or bye1 != 0 or bye2 != 0:
         raise ValueError(
             "Newly registered players should have no matches, wins, or byes.")
     if set([name1, name2]) != set(["Melpomene Murray", "Randy Schwartz"]):
@@ -120,10 +122,13 @@ def testReportMatches():
         if i == id1 and s != 2:
             raise ValueError("Each match winner should have one win recorded.")
         elif i in (id3, id4) and s != 1:
-            raise ValueError("Each draw match player should have one point recorded.")
+            raise ValueError(
+                "Each draw match player should have one point recorded.")
         elif i == id2 and s != 0:
-            raise ValueError("Each match loser should have zero wins recorded.")
+            raise ValueError(
+                "Each match loser should have zero wins recorded.")
     print "7. After a match, players have updated standings."
+
 
 def testReportBye():
     deleteScoreCard()
@@ -142,6 +147,7 @@ def testReportBye():
             raise ValueError("This player should have a bye")
     print "8. Byes are reported properly"
 
+
 def testHasBye():
     deleteScoreCard()
     deleteMatches()
@@ -156,6 +162,7 @@ def testHasBye():
     if not hasBye(id, tid):
         raise ValueError("This player should have a bye")
     print "9. Byes are checked properly"
+
 
 def testCheckByes():
     deleteScoreCard()
@@ -175,6 +182,7 @@ def testCheckByes():
         raise ValueError("This player already has a bye")
     print "10. Byes are assigned properly"
 
+
 def testPairings():
     deleteScoreCard()
     deleteMatches()
@@ -188,7 +196,7 @@ def testPairings():
     registerPlayer("Pinkie Pie", tid)
     standings = playerStandings(tid)
     [id1, id2, id3, id4] = [row[0] for row in standings]
-    reportMatch(tid, id1, id2,'FALSE')
+    reportMatch(tid, id1, id2, 'FALSE')
     reportMatch(tid, id3, id4, 'FALSE')
     pairings = swissPairings(tid)
     if len(pairings) != 2:
@@ -201,6 +209,7 @@ def testPairings():
         raise ValueError(
             "After one match, players with one win should be paired.")
     print "11. After one match, players with one win are paired."
+
 
 def testOddPairings():
     deleteScoreCard()
@@ -216,7 +225,7 @@ def testOddPairings():
     registerPlayer("Bye Bye", tid)
     standings = playerStandings(tid)
     [id1, id2, id3, id4, id5] = [row[0] for row in standings]
-    reportMatch(tid, id1, id2,'FALSE')
+    reportMatch(tid, id1, id2, 'FALSE')
     reportMatch(tid, id3, id4, 'FALSE')
     pairings = swissPairings(tid)
     if len(pairings) != 2:
@@ -229,6 +238,7 @@ def testOddPairings():
         raise ValueError(
             "Bye should be given to last standing")
     print "12. With odd number, last player should have bye."
+
 
 def testRematch():
     deleteScoreCard()
@@ -245,7 +255,7 @@ def testRematch():
     registerPlayer("Six", tid)
     standings = playerStandings(tid)
     [id1, id2, id3, id4, id5, id6] = [row[0] for row in standings]
-    reportMatch(tid, id1, id2,'FALSE')
+    reportMatch(tid, id1, id2, 'FALSE')
     reportMatch(tid, id3, id4, 'FALSE')
     reportMatch(tid, id5, id6, 'FALSE')
     reportMatch(tid, id1, id3, 'FALSE')
@@ -255,9 +265,12 @@ def testRematch():
     if len(pairings) != 3:
         raise ValueError(
             "For six players, swissPairings should return three pairs.")
-    [(pid1, pname1, pid2, pname2), (pid3, pname3, pid4, pname4), (pid5, pname5, pid6, pname6)] = pairings
-    correct_pairs = set([frozenset([id1, id5]), frozenset([id3, id2]), frozenset([id4, id6])])
-    actual_pairs = set([frozenset([pid1, pid2]), frozenset([pid3, pid4]), frozenset([pid5, pid6])])
+    [(pid1, pname1, pid2, pname2), (pid3, pname3, pid4, pname4),
+     (pid5, pname5, pid6, pname6)] = pairings
+    correct_pairs = set(
+        [frozenset([id1, id5]), frozenset([id3, id2]), frozenset([id4, id6])])
+    actual_pairs = set(
+        [frozenset([pid1, pid2]), frozenset([pid3, pid4]), frozenset([pid5, pid6])])
     if correct_pairs != actual_pairs:
         raise ValueError(
             "Rematch occurred.")

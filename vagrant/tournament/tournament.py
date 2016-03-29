@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# 
+#
 # tournament.py -- implementation of a Swiss-system tournament
 #
 
@@ -10,6 +10,7 @@ def connect():
     """Connect to the PostgreSQL database.  Returns a database connection."""
     return psycopg2.connect("dbname=tournament")
 
+
 def deleteScoreCard():
     """Remove all the score records from the database """
     db = connect()
@@ -18,6 +19,7 @@ def deleteScoreCard():
     cursor.execute(command)
     db.commit()
     db.close()
+
 
 def deleteMatches():
     """Remove all the match records from the database."""
@@ -28,6 +30,7 @@ def deleteMatches():
     db.commit()
     db.close()
 
+
 def deletePlayers():
     """Remove all the player records from the database."""
     db = connect()
@@ -36,6 +39,7 @@ def deletePlayers():
     cursor.execute(command)
     db.commit()
     db.close()
+
 
 def deleteTournaments():
     """Remove all the tournament records from the database. """
@@ -56,11 +60,12 @@ def createTournament(name):
     db = connect()
     cursor = db.cursor()
     command = "INSERT INTO tournaments (name) VALUES (%s) RETURNING id;"
-    cursor.execute(command,(name,))
+    cursor.execute(command, (name,))
     tournamentId = cursor.fetchone()[0]
     db.commit()
     db.close()
     return tournamentId
+
 
 def countPlayers(tournamentId):
     """
@@ -73,14 +78,15 @@ def countPlayers(tournamentId):
     cursor.execute(command, (tournamentId,))
     count = cursor.fetchone()[0]
     db.close()
-    return count 
+    return count
+
 
 def registerPlayer(name, tournamentId):
     """Adds a player to the tournament database.
-  
+
     The database assigns a unique serial id number for the player.  (This
     should be handled by your SQL database schema, not in your Python code.)
-  
+
     Args:
       name: the player's full name (need not be unique).
     """
@@ -90,9 +96,10 @@ def registerPlayer(name, tournamentId):
     cursor.execute(command, (name,))
     playerId = cursor.fetchone()[0]
     command = "INSERT INTO ScoreCard (tournament, player, score, matches, bye) VALUES (%s, %s, %s, %s, %s);"
-    cursor.execute(command,(tournamentId, playerId, 0, 0, 0))
+    cursor.execute(command, (tournamentId, playerId, 0, 0, 0))
     db.commit()
     db.close()
+
 
 def playerStandings(tournamentId):
     """Returns a list of the players and their win records, sorted by wins.
@@ -117,7 +124,7 @@ def playerStandings(tournamentId):
 	       (SELECT winner FROM Matches WHERE loser = s.player AND tournament = %s)) AS omw 
 	       FROM ScoreCard as s JOIN Players ON s.player = Players.id 
 	       WHERE s.tournament = %s ORDER BY s.score DESC, omw DESC, s.matches;"""
-    cursor.execute(command,(tournamentId,tournamentId,tournamentId))
+    cursor.execute(command, (tournamentId, tournamentId, tournamentId))
     standings = []
     for standing in cursor.fetchall():
         standings.append(standing)
@@ -142,7 +149,7 @@ def reportMatch(tournamentId, winner, loser, draw):
     db = connect()
     cursor = db.cursor()
     command = "INSERT INTO Matches (tournament, winner, loser, draw) VALUES (%s,%s,%s,%s);"
-    cursor.execute(command,(tournamentId, winner, loser, draw))
+    cursor.execute(command, (tournamentId, winner, loser, draw))
     command = "UPDATE ScoreCard SET score = score+%s, matches = matches+1 WHERE player = %s AND tournament = %s;"
     cursor.execute(command, (winnerPts, winner, tournamentId))
     command = "UPDATE ScoreCard SET score = score+%s, matches = matches+1 WHERE player = %s AND tournament = %s;"
@@ -160,7 +167,7 @@ def canBye(tournamentId, playerId):
     db = connect()
     cursor = db.cursor()
     command = "SELECT bye FROM ScoreCard WHERE tournament = %s AND player = %s;"
-    cursor.execute(command,(tournamentId, playerId))
+    cursor.execute(command, (tournamentId, playerId))
     canBye = cursor.fetchone()[0]
     db.close()
     if canBye:
@@ -237,12 +244,12 @@ def checkPairs(tournamentId, standings, player1, player2):
 
 def swissPairings(tournamentId):
     """Returns a list of pairs of players for the next round of a match.
-  
+
     Assuming that there are an even number of players registered, each player
     appears exactly once in the pairings.  Each player is paired with another
     player with an equal or nearly-equal win record, that is, a player adjacent
     to him or her in the standings.
-  
+
     Returns:
       A list of tuples, each of which contains (id1, name1, id2, name2)
         id1: the first player's unique id
@@ -255,8 +262,8 @@ def swissPairings(tournamentId):
     playerCount = countPlayers(tournamentId)
     if playerCount % 2 != 0:
         bye = standings.pop(checkByes(tournamentId, standings, 0))
-        reportBye(tournamentId,bye[0])
-    
+        reportBye(tournamentId, bye[0])
+
     while len(standings) > 1:
         validMatch = checkPairs(tournamentId, standings, 0, 1)
         player1 = standings.pop(0)
@@ -264,4 +271,3 @@ def swissPairings(tournamentId):
         pairs.append((player1[0], player1[1], player2[0], player2[1]))
 
     return pairs
-
