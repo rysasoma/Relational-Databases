@@ -4,7 +4,7 @@
 
 # The forumdb module is where the database interface code goes.
 import forumdb
-
+import bleach
 # Other modules used to run a web server.
 import cgi
 from wsgiref.simple_server import make_server
@@ -74,6 +74,8 @@ def Post(env, resp):
         # If the post is just whitespace, don't save it.
         content = content.strip()
         if content:
+	    # Cleaning out evil JS
+	    content = bleach.clean(content)
             # Save it in the database
             forumdb.AddPost(content)
     # 302 redirect back to the main page
