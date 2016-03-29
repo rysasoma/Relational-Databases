@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-rdb-fullstack
-=============
-
-Common code for the Relational Databases and Full Stack Fundamentals courses
-=======
 # Udacity-FullStack-Project-2
 A basic schema for a swiss tournament.
 
@@ -34,4 +28,3 @@ Run python tests!
 
     python tournament_test.py
 
->>>>>>> e79d3fd661c775ddd87314fe781425b8cb3b5ae8
