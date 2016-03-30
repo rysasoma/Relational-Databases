@@ -6,15 +6,19 @@
 import psycopg2
 
 
-def connect():
+def connect(databaseName='tournament'):
     """Connect to the PostgreSQL database.  Returns a database connection."""
-    return psycopg2.connect("dbname=tournament")
+    try:
+        db = psycopg2.connect("dbname={}".format(databaseName))
+        cursor = db.cursor()
+        return db, cursor
+    except:
+        print('Failed to connect to the database.')
 
 
 def deleteScoreCard():
     """Remove all the score records from the database """
-    db = connect()
-    cursor = db.cursor()
+    db, cursor = connect()
     command = "DELETE FROM ScoreCard;"
     cursor.execute(command)
     db.commit()
@@ -23,8 +27,7 @@ def deleteScoreCard():
 
 def deleteMatches():
     """Remove all the match records from the database."""
-    db = connect()
-    cursor = db.cursor()
+    db, cursor = connect()
     command = "DELETE FROM Matches;"
     cursor.execute(command)
     db.commit()
@@ -33,8 +36,7 @@ def deleteMatches():
 
 def deletePlayers():
     """Remove all the player records from the database."""
-    db = connect()
-    cursor = db.cursor()
+    db, cursor = connect()
     command = "DELETE FROM Players;"
     cursor.execute(command)
     db.commit()
@@ -43,8 +45,7 @@ def deletePlayers():
 
 def deleteTournaments():
     """Remove all the tournament records from the database. """
-    db = connect()
-    cursor = db.cursor()
+    db, cursor = connect()
     command = "DELETE FROM Tournaments;"
     cursor.execute(command)
     db.commit()
@@ -57,8 +58,7 @@ def createTournament(name):
     @name: Name of the tournament
     Returns the tournament id.
     """
-    db = connect()
-    cursor = db.cursor()
+    db, cursor = connect()
     command = "INSERT INTO tournaments (name) VALUES (%s) RETURNING id;"
     cursor.execute(command, (name,))
     tournamentId = cursor.fetchone()[0]
@@ -72,8 +72,7 @@ def countPlayers(tournamentId):
     Returns the number of players currently registered in the given tournament.
     @tournamentId: The id of the tournament we are looking for players in.
     """
-    db = connect()
-    cursor = db.cursor()
+    db, cursor = connect()
     command = "SELECT COUNT(player) FROM ScoreCard WHERE tournament = %s;"
     cursor.execute(command, (tournamentId,))
     count = cursor.fetchone()[0]
@@ -90,8 +89,7 @@ def registerPlayer(name, tournamentId):
     Args:
       name: the player's full name (need not be unique).
     """
-    db = connect()
-    cursor = db.cursor()
+    db, cursor = connect()
     command = "INSERT INTO Players (name) VALUES (%s) RETURNING id;"
     cursor.execute(command, (name,))
     playerId = cursor.fetchone()[0]
@@ -114,16 +112,15 @@ def playerStandings(tournamentId):
         wins: the number of matches the player has won
         matches: the number of matches the player has played
     """
-    db = connect()
-    cursor = db.cursor()
+    db, cursor = connect()
     command = """SELECT s.player, Players.name, s.score, s.matches, s.bye, (SELECT SUM(s2.score) 
 	       FROM ScoreCard as s2 
                WHERE s2.player IN 
                (SELECT loser FROM Matches WHERE winner = s.player AND tournament = %s) 
- 	       OR s2.player IN 
-	       (SELECT winner FROM Matches WHERE loser = s.player AND tournament = %s)) AS omw 
+ 	       OR s2.player IN (SELECT winner FROM Matches WHERE loser = s.player AND tournament = %s)) as omw
 	       FROM ScoreCard as s JOIN Players ON s.player = Players.id 
-	       WHERE s.tournament = %s ORDER BY s.score DESC, omw DESC, s.matches;"""
+	       WHERE s.tournament = %s ORDER BY s.score DESC, omw DESC, s.matches;
+	      """ 
     cursor.execute(command, (tournamentId, tournamentId, tournamentId))
     standings = []
     for standing in cursor.fetchall():
@@ -146,8 +143,7 @@ def reportMatch(tournamentId, winner, loser, draw):
         winnerPts = 2
         loserPts = 0
 
-    db = connect()
-    cursor = db.cursor()
+    db, cursor = connect()
     command = "INSERT INTO Matches (tournament, winner, loser, draw) VALUES (%s,%s,%s,%s);"
     cursor.execute(command, (tournamentId, winner, loser, draw))
     command = "UPDATE ScoreCard SET score = score+%s, matches = matches+1 WHERE player = %s AND tournament = %s;"
@@ -164,8 +160,7 @@ def canBye(tournamentId, playerId):
     @tournamentId: ID of the tournament
     @playerId: ID of the player
     """
-    db = connect()
-    cursor = db.cursor()
+    db, cursor = connect()
     command = "SELECT bye FROM ScoreCard WHERE tournament = %s AND player = %s;"
     cursor.execute(command, (tournamentId, playerId))
     canBye = cursor.fetchone()[0]
@@ -181,8 +176,7 @@ def reportBye(tournamentId, playerId):
     @tournamentId: The id of the tournament.
     @playerId: The id of the player.
     """
-    db = connect()
-    cursor = db.cursor()
+    db, cursor = connect()
     command = "UPDATE ScoreCard SET score = score + 2, matches = matches + 1, bye = bye + 1 WHERE tournament = %s AND player = %s;"
     cursor.execute(command, (tournamentId, playerId))
     db.commit()
@@ -213,8 +207,7 @@ def validPair(tournamentId, player1, player2):
     @player2: The id of the second player
     Returns whether the pairing is valid.
     """
-    db = connect()
-    cursor = db.cursor()
+    db, cursor = connect()
     command = "SELECT winner, loser FROM Matches WHERE ((winner = %s AND loser = %s) OR (winner = %s AND loser = %s)) AND tournament = %s;"
     cursor.execute(command, (player1, player2, player2, player1, tournamentId))
     prevMatches = cursor.rowcount
@@ -269,5 +262,5 @@ def swissPairings(tournamentId):
         player1 = standings.pop(0)
         player2 = standings.pop(validMatch - 1)
         pairs.append((player1[0], player1[1], player2[0], player2[1]))
-
+    
     return pairs
