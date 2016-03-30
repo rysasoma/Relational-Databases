@@ -78,7 +78,7 @@ GROUP BY TournamentPlayerRegistry.tournament, TournamentPlayerRegistry.player;
 -- player's id, name, wins, matches played
 -- view is used to display players standings as well as create new matchups based on totals 
 CREATE VIEW standings AS 
-SELECT wintracker.id, wintracker.name, wintracker.wins, matchtracker.matchesPlayed, 
+SELECT wintracker.tournament, wintracker.id, wintracker.name, wintracker.wins, matchtracker.matchesPlayed, 
 (SELECT SUM(w2.wins) 
     FROM wintracker as w2 WHERE 
         w2.id IN (SELECT loser FROM Matches WHERE winner = w1.id AND matches.tournament = w2.tournament AND matches.tournament = w1.tournament)

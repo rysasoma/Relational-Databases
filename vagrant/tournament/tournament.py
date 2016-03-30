@@ -24,6 +24,14 @@ def deleteScoreCard():
     db.commit()
     db.close()
 
+def deleteTournamentPlayerRegistry():
+    """Remove all the records form the TournamentPlayerRegistry Table"""
+    db, cursor = connect()
+    command = "DELETE FROM TournamentPlayerRegistry;"
+    cursor.execute(command)
+    db.commit()
+    db.close()
+
 
 def deleteMatches():
     """Remove all the match records from the database."""
@@ -73,7 +81,7 @@ def countPlayers(tournamentId):
     @tournamentId: The id of the tournament we are looking for players in.
     """
     db, cursor = connect()
-    command = "SELECT COUNT(player) FROM ScoreCard WHERE tournament = %s;"
+    command = "SELECT COUNT(player) FROM TournamentPlayerRegistry WHERE tournament = %s;"
     cursor.execute(command, (tournamentId,))
     count = cursor.fetchone()[0]
     db.close()
@@ -93,8 +101,8 @@ def registerPlayer(name, tournamentId):
     command = "INSERT INTO Players (name) VALUES (%s) RETURNING id;"
     cursor.execute(command, (name,))
     playerId = cursor.fetchone()[0]
-    command = "INSERT INTO ScoreCard (tournament, player, score, matches, bye) VALUES (%s, %s, %s, %s, %s);"
-    cursor.execute(command, (tournamentId, playerId, 0, 0, 0))
+    command = "INSERT INTO TournamentPlayerRegistry (tournament, player, bye) VALUES (%s, %s, %s);"
+    cursor.execute(command, (tournamentId, playerId, 0))
     db.commit()
     db.close()
 
@@ -113,15 +121,8 @@ def playerStandings(tournamentId):
         matches: the number of matches the player has played
     """
     db, cursor = connect()
-    command = """SELECT s.player, Players.name, s.score, s.matches, s.bye, (SELECT SUM(s2.score) 
-	       FROM ScoreCard as s2 
-               WHERE s2.player IN 
-               (SELECT loser FROM Matches WHERE winner = s.player AND tournament = %s) 
- 	       OR s2.player IN (SELECT winner FROM Matches WHERE loser = s.player AND tournament = %s)) as omw
-	       FROM ScoreCard as s JOIN Players ON s.player = Players.id 
-	       WHERE s.tournament = %s ORDER BY s.score DESC, omw DESC, s.matches;
-	      """ 
-    cursor.execute(command, (tournamentId, tournamentId, tournamentId))
+    command = "SELECT id, name, wins, matchesPlayed FROM standings WHERE tournament = %s "
+    cursor.execute(command, (tournamentId))
     standings = []
     for standing in cursor.fetchall():
         standings.append(standing)
@@ -146,10 +147,6 @@ def reportMatch(tournamentId, winner, loser, draw):
     db, cursor = connect()
     command = "INSERT INTO Matches (tournament, winner, loser, draw) VALUES (%s,%s,%s,%s);"
     cursor.execute(command, (tournamentId, winner, loser, draw))
-    command = "UPDATE ScoreCard SET score = score+%s, matches = matches+1 WHERE player = %s AND tournament = %s;"
-    cursor.execute(command, (winnerPts, winner, tournamentId))
-    command = "UPDATE ScoreCard SET score = score+%s, matches = matches+1 WHERE player = %s AND tournament = %s;"
-    cursor.execute(command, (loserPts, loser, tournamentId))
     db.commit()
     db.close()
 
@@ -161,7 +158,7 @@ def canBye(tournamentId, playerId):
     @playerId: ID of the player
     """
     db, cursor = connect()
-    command = "SELECT bye FROM ScoreCard WHERE tournament = %s AND player = %s;"
+    command = "SELECT bye FROM TournamentPlayerRegistry WHERE tournament = %s AND player = %s;"
     cursor.execute(command, (tournamentId, playerId))
     canBye = cursor.fetchone()[0]
     db.close()
@@ -177,8 +174,10 @@ def reportBye(tournamentId, playerId):
     @playerId: The id of the player.
     """
     db, cursor = connect()
-    command = "UPDATE ScoreCard SET score = score + 2, matches = matches + 1, bye = bye + 1 WHERE tournament = %s AND player = %s;"
+    command = "UPDATE TournamentPlayerRegistry SET bye = bye + 1 WHERE tournament = %s AND player = %s;"
+    scoreCommand = "INSERT INTO Matches(tournament, winner, loser, draw) VALUES (%s,%s,%s,%s);"
     cursor.execute(command, (tournamentId, playerId))
+    cursor.execute(scoreCommand, (tournamentId, playerId, playerId, 'FALSE'))
     db.commit()
     db.close()
 
