@@ -42,18 +42,8 @@ CREATE TABLE IF NOT EXISTS TournamentPlayerRegistry (
 	PRIMARY KEY(tournament, player)	
 );
 
--- ScoreCard Table
-CREATE TABLE IF NOT EXISTS ScoreCard (
-	tournament INTEGER references Tournaments(id),
-	player INTEGER references Players(id),
-	score INTEGER,
-	matches INTEGER,
-	bye INTEGER,
-	PRIMARY KEY(tournament, player)
-);
 
--- add tournament attribute to players, wintracker and matchtracker.  Then add tournament to standings where %s is specified and in select part.
--- Wintracker View joins matches and tournamentplayerregistry tables to count the number of wins by player
+-- Wintracker View joins Players,TournamentPlayerRegistry,Matches tables to count the number of wins by player
 CREATE VIEW wintracker AS
 SELECT TournamentPlayerRegistry.tournament, Players.id, Players.name, COUNT(Matches.winner) AS wins
 FROM Players LEFT JOIN TournamentPlayerRegistry ON Players.id = TournamentPlayerRegistry.player 
@@ -64,7 +54,7 @@ GROUP BY TournamentPlayerRegistry.tournament, Players.id;
 
 
 
--- Matchtracker View joins matches and tournamentplayerregistry tables to count the number of matches by player
+-- Matchtracker View joins Players,Matches and TournamentPlayerRegistry tables to count the number of matches by player
 CREATE VIEW matchtracker AS
 SELECT TournamentPlayerRegistry.tournament, Players.id, Players.name, COUNT(matches) AS matchesPlayed
 FROM Players LEFT JOIN TournamentPlayerRegistry ON Players.id = TournamentPlayerRegistry.player 
@@ -77,7 +67,6 @@ GROUP BY TournamentPlayerRegistry.tournament, Players.id;
 
 -- Standings View which joins wintracker and matchtracker to display
 -- player's id, name, wins, matches played
--- view is used to display players standings as well as create new matchups based on totals 
 CREATE VIEW standings AS 
 SELECT w1.tournament, w1.id, w1.name, w1.wins, matchtracker.matchesPlayed, 
 (SELECT SUM(w2.wins) 
