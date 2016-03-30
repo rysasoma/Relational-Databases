@@ -1,5 +1,6 @@
 # Udacity-FullStack-Project-2
-A basic schema for a swiss tournament.
+A basic schema for a swiss style tournament.
+[Description](https://en.wikipedia.org/wiki/Swiss-system_tournament) of a swiss tournament can be found here.
 
 #Pre-requisites
 1. Need PostgreSQL
@@ -10,7 +11,7 @@ OR
 
 Use the Udacity environment by following the instructions [here](https://www.udacity.com/wiki/ud197/install-vagrant)
 
-#Usage
+#How to Run
 Have a tournament database 
 
 
@@ -22,11 +23,11 @@ Have a tournament database
     CREATE DATABASE
     vagrant=> \q
 
-Load the SQL schema
+Load the SQL schema for the first time with:
     
     vagrant@vagrant-ubuntu-trusty-32:/vagrant/tournament$ psql tournament < tournament.sql
 
-Run python tests!
+Run the python tests with the following command:
 
-    python tournament_test.py
+    python extra_tournament_test.py
 
