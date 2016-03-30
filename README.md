@@ -25,7 +25,7 @@ Have a tournament database
 
 Load the SQL schema for the first time with:
     
-    vagrant@vagrant-ubuntu-trusty-32:/vagrant/tournament$ psql tournament < tournament.sql
+    vagrant@vagrant-ubuntu-trusty-32:/vagrant/tournament$ psql -f tournament.sql
 
 Run the python tests with the following command:
 
