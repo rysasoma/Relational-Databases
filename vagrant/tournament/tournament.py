@@ -122,7 +122,7 @@ def playerStandings(tournamentId):
     """
     db, cursor = connect()
     command = "SELECT id, name, wins, matchesPlayed FROM standings WHERE tournament = %s "
-    cursor.execute(command, (tournamentId))
+    cursor.execute(command, (tournamentId,))
     standings = []
     for standing in cursor.fetchall():
         standings.append(standing)
@@ -137,13 +137,6 @@ def reportMatch(tournamentId, winner, loser, draw):
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
     """
-    if draw == 'TRUE':
-        winnerPts = 1
-        loserPts = 1
-    else:
-        winnerPts = 2
-        loserPts = 0
-
     db, cursor = connect()
     command = "INSERT INTO Matches (tournament, winner, loser, draw) VALUES (%s,%s,%s,%s);"
     cursor.execute(command, (tournamentId, winner, loser, draw))

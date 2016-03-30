@@ -11,7 +11,7 @@ def testDeleteMatches():
 
 
 def testDelete():
-    deleteScoreCard()
+    deleteTournamentPlayerRegistry()
     deleteMatches()
     deletePlayers()
     deleteTournaments()
@@ -20,7 +20,7 @@ def testDelete():
 
 
 def testCount():
-    deleteScoreCard()
+    deleteTournamentPlayerRegistry()
     deleteMatches()
     deletePlayers()
     deleteTournaments()
@@ -36,7 +36,7 @@ def testCount():
 
 
 def testRegister():
-    deleteScoreCard()
+    deleteTournamentPlayerRegistry()
     deleteMatches()
     deletePlayers()
     deleteTournaments()
@@ -51,7 +51,7 @@ def testRegister():
 
 
 def testRegisterCountDelete():
-    deleteScoreCard()
+    deleteTournamentPlayerRegistry()
     deleteMatches()
     deletePlayers()
     deleteTournaments()
@@ -65,7 +65,7 @@ def testRegisterCountDelete():
     if c != 4:
         raise ValueError(
             "After registering four players, countPlayers should be 4.")
-    deleteScoreCard()
+    deleteTournamentPlayerRegistry()
     c = countPlayers(tid)
     if c != 0:
         raise ValueError("After deleting, countPlayers should return zero.")
@@ -73,7 +73,7 @@ def testRegisterCountDelete():
 
 
 def testStandingsBeforeMatches():
-    deleteScoreCard()
+    deleteTournamentPlayerRegistry()
     deleteMatches()
     deletePlayers()
     deleteTournaments()
@@ -87,11 +87,11 @@ def testStandingsBeforeMatches():
                          "they have played any matches.")
     elif len(standings) > 2:
         raise ValueError("Only registered players should appear in standings.")
-    if len(standings[0]) != 6:
+    if len(standings[0]) != 4:
         raise ValueError("Each playerStandings row should have five columns.")
-    [(id1, name1, wins1, matches1, bye1, owm1),
-     (id2, name2, wins2, matches2, bye2, owm2)] = standings
-    if matches1 != 0 or matches2 != 0 or wins1 != 0 or wins2 != 0 or bye1 != 0 or bye2 != 0:
+    [(id1, name1, wins1, matches1),
+     (id2, name2, wins2, matches2)] = standings
+    if matches1 != 0 or matches2 != 0 or wins1 != 0 or wins2 != 0:
         raise ValueError(
             "Newly registered players should have no matches, wins, or byes.")
     if set([name1, name2]) != set(["Melpomene Murray", "Randy Schwartz"]):
@@ -101,7 +101,7 @@ def testStandingsBeforeMatches():
 
 
 def testReportMatches():
-    deleteScoreCard()
+    deleteTournamentPlayerRegistry()
     deleteMatches()
     deletePlayers()
     deleteTournaments()
@@ -116,10 +116,11 @@ def testReportMatches():
     reportMatch(tid, id1, id2, 'FALSE')
     reportMatch(tid, id3, id4, 'TRUE')
     standings = playerStandings(tid)
-    for (i, n, s, m, b, o) in standings:
+    print(standings)
+    for (i, n, s, m) in standings:
         if m != 1:
             raise ValueError("Each player should have one match recorded.")
-        if i == id1 and s != 2:
+        if i == id1 and s != 1:
             raise ValueError("Each match winner should have one win recorded.")
         elif i in (id3, id4) and s != 1:
             raise ValueError(
@@ -131,7 +132,7 @@ def testReportMatches():
 
 
 def testReportBye():
-    deleteScoreCard()
+    deleteTournamentPlayerRegistry()
     deleteMatches()
     deletePlayers()
     deleteTournaments()
@@ -143,13 +144,13 @@ def testReportBye():
     reportBye(tid, id)
     standings = playerStandings(tid)
     for row in standings:
-        if row[4] != 1:
+        if not canBye(tid,row[0]):
             raise ValueError("This player should have a bye")
     print "8. Byes are reported properly"
 
 
-def testHasBye():
-    deleteScoreCard()
+def testCanBye():
+    deleteTournamentPlayerRegistry()
     deleteMatches()
     deletePlayers()
     deleteTournaments()
@@ -158,14 +159,14 @@ def testHasBye():
     registerPlayer("Bruno Walton", tid)
     standings = playerStandings(tid)
     id = standings[0][0]
-    reportBye(id, tid)
-    if not hasBye(id, tid):
+    reportBye(tid, id)
+    if not canBye(tid, id):
         raise ValueError("This player should have a bye")
     print "9. Byes are checked properly"
 
 
 def testCheckByes():
-    deleteScoreCard()
+    deleteTournamentPlayerRegistry()
     deleteMatches()
     deletePlayers()
     deleteTournaments()
@@ -184,7 +185,7 @@ def testCheckByes():
 
 
 def testPairings():
-    deleteScoreCard()
+    deleteTournamentPlayerRegistry()
     deleteMatches()
     deletePlayers()
     deleteTournaments()
@@ -212,7 +213,7 @@ def testPairings():
 
 
 def testOddPairings():
-    deleteScoreCard()
+    deleteTournamentPlayerRegistry()
     deleteMatches()
     deletePlayers()
     deleteTournaments()
@@ -241,7 +242,7 @@ def testOddPairings():
 
 
 def testRematch():
-    deleteScoreCard()
+    deleteTournamentPlayerRegistry()
     deleteMatches()
     deletePlayers()
     deleteTournaments()
@@ -286,7 +287,7 @@ if __name__ == '__main__':
     testStandingsBeforeMatches()
     testReportMatches()
     testReportBye()
-    testHasBye
+    testCanBye()
     testCheckByes()
     testPairings()
     testOddPairings()
